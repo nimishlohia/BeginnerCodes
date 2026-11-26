@@ -64,6 +64,14 @@ describe("Content & Keyword SEO Pages", () => {
       })
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Two Sum/i })).toHaveAttribute("href", "/challenges/1");
+    const pythonTutorialLink = screen.getByRole("link", { name: /official Python 3 tutorial/i });
+    expect(pythonTutorialLink).toHaveAttribute("href", "https://docs.python.org/3/tutorial/");
+    expect(pythonTutorialLink).toHaveAttribute("rel", "noopener noreferrer");
+
+    const seonaLink = screen.getByRole("link", { name: /SEO tools at Seona Labs/i });
+    expect(seonaLink).toHaveAttribute("href", "https://seonalabs.com");
+    expect(seonaLink).toHaveAttribute("rel", "noopener noreferrer");
+
     expect(screen.getByRole("link", { name: /Oracle Java Tutorials/i })).toHaveAttribute(
       "href",
       "https://docs.oracle.com/javase/tutorial/"

@@ -198,7 +198,16 @@ export const BlogPostPage: React.FC = () => {
               >
                 MDN Web Docs JavaScript Guide
               </a>
-              .
+              . When you eventually share your coding notes or portfolio projects online, exploring{" "}
+              <a
+                href="https://seonalabs.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-400 hover:underline"
+              >
+                SEO tools at Seona Labs
+              </a>{" "}
+              also shows how search engines discover and evaluate technical tutorials.
             </p>
           </div>
         </section>
