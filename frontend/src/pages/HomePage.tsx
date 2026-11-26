@@ -125,7 +125,7 @@ export const HomePage: React.FC = () => {
           <button
             onClick={fetchHealth}
             disabled={status === "checking"}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition disabled:opacity-50"
+            className="px-4 py-2.5 min-h-[44px] text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition disabled:opacity-50"
           >
             Check Again
           </button>

@@ -89,7 +89,7 @@ export const ChallengeDetailPage: React.FC = () => {
           path={id ? `/challenges/${id}` : "/challenges"}
           noIndex
         />
-        <div className="max-w-2xl mx-auto text-center py-16">
+        <div className="max-w-2xl mx-auto text-center py-16 min-h-[75vh]">
           <p className="text-rose-400 text-sm">{loadError}</p>
         </div>
       </>
@@ -97,7 +97,11 @@ export const ChallengeDetailPage: React.FC = () => {
   }
 
   if (!challenge) {
-    return <div className="text-center py-16 text-slate-400 text-sm">Loading…</div>;
+    return (
+      <div className="max-w-3xl mx-auto w-full min-h-[75vh] space-y-6">
+        <div className="text-center py-16 text-slate-400 text-sm">Loading…</div>
+      </div>
+    );
   }
 
   const cleanDescription = challenge.description.replace(/\s+/g, " ").trim().slice(0, 145);
@@ -215,7 +219,7 @@ export const ChallengeDetailPage: React.FC = () => {
             <p className="text-sm text-slate-400">
               <button
                 onClick={() => navigate("/login")}
-                className="text-emerald-400 hover:text-emerald-300 font-medium transition"
+                className="text-emerald-400 hover:text-emerald-300 font-medium transition py-2 inline-flex items-center"
               >
                 Sign in
               </button>{" "}

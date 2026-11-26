@@ -58,7 +58,7 @@ export const SubmissionsPage: React.FC = () => {
         path="/submissions"
         noIndex
       />
-      <div className="max-w-3xl mx-auto w-full space-y-6">
+      <div className="max-w-3xl mx-auto w-full space-y-6 min-h-[75vh]">
       <div>
         <h1 className="text-2xl font-bold text-white">My Submissions</h1>
         <p className="text-sm text-slate-400 mt-0.5">Your personal submission history.</p>

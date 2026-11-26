@@ -69,6 +69,7 @@ async def test_spa_fallback_and_api_404(tmp_path, monkeypatch, db_session):
     )
     (dist_dir / "assets" / "app.js").write_text("console.log('ok');", encoding="utf-8")
     (dist_dir / "robots.txt").write_text("User-agent: *\nAllow: /\n", encoding="utf-8")
+    (dist_dir / "sitemap.xml").write_text("<urlset></urlset>", encoding="utf-8")
 
     monkeypatch.setattr(settings, "FRONTEND_DIST_DIR", str(dist_dir))
     spa_app = create_application()
@@ -80,9 +81,19 @@ async def test_spa_fallback_and_api_404(tmp_path, monkeypatch, db_session):
     ) as client:
         root_resp = await client.get("/")
         assert root_resp.status_code == 200
+        assert root_resp.headers["cache-control"] == "no-cache"
+        assert root_resp.headers["x-content-type-options"] == "nosniff"
+        assert root_resp.headers["x-frame-options"] == "DENY"
+        assert root_resp.headers["referrer-policy"] == "strict-origin-when-cross-origin"
+        assert "content-security-policy-report-only" in root_resp.headers
+        assert "strict-transport-security" not in root_resp.headers
         assert "<title>Peer-Based Coding Practice and Programming Challenges | LevelUp</title>" in root_resp.text
         assert 'href="https://www.beginnercodes.online/"' in root_resp.text
         assert '"@type": "Organization"' in root_resp.text
+
+        https_resp = await client.get("/", headers={"X-Forwarded-Proto": "https"})
+        assert https_resp.status_code == 200
+        assert https_resp.headers["strict-transport-security"] == "max-age=31536000"
 
         challenges_resp = await client.get("/challenges")
         assert challenges_resp.status_code == 200
@@ -105,15 +116,26 @@ async def test_spa_fallback_and_api_404(tmp_path, monkeypatch, db_session):
         for private_path in ("/login", "/register", "/dashboard", "/submissions"):
             priv_resp = await client.get(private_path)
             assert priv_resp.status_code == 200
+            assert priv_resp.headers["cache-control"] == "no-cache"
             assert 'content="noindex, nofollow"' in priv_resp.text
             assert f'href="https://www.beginnercodes.online{private_path}"' in priv_resp.text
 
+        favicon_resp = await client.get("/favicon.ico")
+        assert favicon_resp.status_code == 204
+        assert favicon_resp.text == ""
+
         robots_resp = await client.get("/robots.txt")
         assert robots_resp.status_code == 200
+        assert robots_resp.headers["cache-control"] == "public, max-age=3600"
         assert "User-agent: *" in robots_resp.text
+
+        sitemap_resp = await client.get("/sitemap.xml")
+        assert sitemap_resp.status_code == 200
+        assert sitemap_resp.headers["cache-control"] == "public, max-age=3600"
 
         asset_resp = await client.get("/assets/app.js")
         assert asset_resp.status_code == 200
+        assert asset_resp.headers["cache-control"] == "public, max-age=31536000, immutable"
         assert "console.log('ok')" in asset_resp.text
 
         api_missing = await client.get("/api/nonexistent-route")

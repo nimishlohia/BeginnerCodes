@@ -73,7 +73,7 @@ export const ChallengesPage: React.FC = () => {
         structuredData={CHALLENGES_BREADCRUMB}
       />
 
-      <div className="max-w-3xl mx-auto w-full space-y-6">
+      <div className="max-w-3xl mx-auto w-full space-y-6 min-h-[75vh]">
         <div>
           <h1 className="text-2xl font-bold text-white">Challenges</h1>
           <p className="text-sm text-slate-400 mt-0.5">Browse and solve coding problems at your level.</p>
@@ -87,13 +87,13 @@ export const ChallengesPage: React.FC = () => {
             placeholder="Search by title…"
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+            className="flex-1 px-3 py-2.5 min-h-[44px] rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
           />
           <select
             aria-label="Filter by difficulty"
             value={difficulty}
             onChange={(e) => handleDifficulty(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+            className="px-3 py-2.5 min-h-[44px] rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
           >
             {DIFFICULTIES.map((d) => (
               <option key={d} value={d}>{d || "All Difficulties"}</option>
@@ -149,7 +149,7 @@ export const ChallengesPage: React.FC = () => {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 disabled:opacity-40 transition"
+              className="px-3 py-2.5 min-h-[44px] rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 disabled:opacity-40 transition"
             >
               ← Previous
             </button>
@@ -159,7 +159,7 @@ export const ChallengesPage: React.FC = () => {
             <button
               onClick={() => setPage((p) => Math.min(data.total_pages, p + 1))}
               disabled={page === data.total_pages}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 disabled:opacity-40 transition"
+              className="px-3 py-2.5 min-h-[44px] rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 disabled:opacity-40 transition"
             >
               Next →
             </button>
