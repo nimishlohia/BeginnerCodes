@@ -87,9 +87,29 @@ async def test_spa_fallback_and_api_404(tmp_path, monkeypatch, db_session):
         assert root_resp.headers["referrer-policy"] == "strict-origin-when-cross-origin"
         assert "content-security-policy-report-only" in root_resp.headers
         assert "strict-transport-security" not in root_resp.headers
-        assert "<title>Peer-Based Coding Practice and Programming Challenges | LevelUp</title>" in root_resp.text
+        assert "<title>Programming Practice for Beginners &amp; Coding Challenges | LevelUp</title>" in root_resp.text
         assert 'href="https://www.beginnercodes.online/"' in root_resp.text
         assert '"@type": "Organization"' in root_resp.text
+
+        about_resp = await client.get("/about")
+        assert about_resp.status_code == 200
+        assert "<title>About Us - Friendly Coding Practice Platform | LevelUp</title>" in about_resp.text
+        assert 'href="https://www.beginnercodes.online/about"' in about_resp.text
+        assert '"@type": "BreadcrumbList"' in about_resp.text
+
+        blog_resp = await client.get("/blog")
+        assert blog_resp.status_code == 200
+        assert "<title>Blog - Beginner Programming Guides &amp; Practice Tips | LevelUp</title>" in blog_resp.text
+        assert 'href="https://www.beginnercodes.online/blog"' in blog_resp.text
+
+        article_resp = await client.get("/blog/how-to-start-learning-programming-as-a-beginner")
+        assert article_resp.status_code == 200
+        assert "<title>How to Start Programming as a Beginner | LevelUp</title>" in article_resp.text
+        assert "How to Start Learning Programming as a Beginner" in article_resp.text
+        assert 'href="https://www.beginnercodes.online/blog/how-to-start-learning-programming-as-a-beginner"' in article_resp.text
+        assert 'property="og:type" content="article"' in article_resp.text
+        assert '"@type": "Article"' in article_resp.text
+        assert '"@type": "BreadcrumbList"' in article_resp.text
 
         https_resp = await client.get("/", headers={"X-Forwarded-Proto": "https"})
         assert https_resp.status_code == 200

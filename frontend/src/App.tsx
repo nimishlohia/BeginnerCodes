@@ -27,6 +27,15 @@ const SubmissionsPage = lazy(() =>
     default: m.SubmissionsPage,
   }))
 );
+const AboutPage = lazy(() =>
+  import("./pages/AboutPage").then((m) => ({ default: m.AboutPage }))
+);
+const BlogPage = lazy(() =>
+  import("./pages/BlogPage").then((m) => ({ default: m.BlogPage }))
+);
+const BlogPostPage = lazy(() =>
+  import("./pages/BlogPostPage").then((m) => ({ default: m.BlogPostPage }))
+);
 
 function RouteLoadingFallback() {
   return (
@@ -53,6 +62,13 @@ export const App: React.FC = () => {
                     <DashboardPage />
                   </ProtectedRoute>
                 }
+              />
+              {/* Public informational & content pages */}
+              <Route path="about" element={<AboutPage />} />
+              <Route path="blog" element={<BlogPage />} />
+              <Route
+                path="blog/how-to-start-learning-programming-as-a-beginner"
+                element={<BlogPostPage />}
               />
               {/* Challenge catalogue — public */}
               <Route path="challenges" element={<ChallengesPage />} />

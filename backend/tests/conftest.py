@@ -1,3 +1,4 @@
+from collections.abc import Generator
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import create_engine, event
@@ -81,7 +82,7 @@ def reset_test_db():
 
 
 @pytest.fixture
-def db_session() -> Session:
+def db_session() -> Generator[Session, None, None]:
     """Provides a direct SQLAlchemy session bound to the test database."""
     session = TestSessionLocal()
     try:

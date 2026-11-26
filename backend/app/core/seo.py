@@ -57,11 +57,11 @@ def _canonical(path: str) -> str:
 
 def _home_metadata() -> PageMetadata:
     description = (
-        "Improve your programming and problem-solving skills with LevelUp. "
-        "Explore coding challenges, practice with peers and track your learning progress."
+        "Structured programming practice for beginners on LevelUp. Explore starter "
+        "coding questions, Python beginner guides, and peer-aligned learning in India."
     )
     return PageMetadata(
-        title=f"Peer-Based Coding Practice and Programming Challenges | {SITE_NAME}",
+        title=f"Programming Practice for Beginners & Coding Challenges | {SITE_NAME}",
         description=description,
         canonical_url=_canonical("/"),
         robots="index, follow",
@@ -84,6 +84,145 @@ def _home_metadata() -> PageMetadata:
                 "name": SITE_NAME,
                 "url": SITE_URL,
                 "description": description,
+            },
+        ),
+    )
+
+
+def _about_metadata() -> PageMetadata:
+    return PageMetadata(
+        title=f"About Us - Friendly Coding Practice Platform | {SITE_NAME}",
+        description=(
+            "Discover LevelUp, a beginner-friendly platform for programming practice, "
+            "coding challenges, and building problem-solving skills step by step."
+        ),
+        canonical_url=_canonical("/about"),
+        robots="index, follow",
+        og_type="website",
+        include_social=True,
+        structured_data=(
+            {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Home",
+                        "item": _canonical("/"),
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "About Us",
+                        "item": _canonical("/about"),
+                    },
+                ],
+            },
+        ),
+    )
+
+
+def _blog_index_metadata() -> PageMetadata:
+    return PageMetadata(
+        title=f"Blog - Beginner Programming Guides & Practice Tips | {SITE_NAME}",
+        description=(
+            "Read practical beginner programming guides on LevelUp. Learn Python basics, "
+            "starter coding questions, and step-by-step problem-solving habits."
+        ),
+        canonical_url=_canonical("/blog"),
+        robots="index, follow",
+        og_type="website",
+        include_social=True,
+        structured_data=(
+            {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Home",
+                        "item": _canonical("/"),
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "Blog",
+                        "item": _canonical("/blog"),
+                    },
+                ],
+            },
+        ),
+    )
+
+
+def _blog_article_metadata() -> PageMetadata:
+    article_path = "/blog/how-to-start-learning-programming-as-a-beginner"
+    article_url = _canonical(article_path)
+    seo_title = f"How to Start Programming as a Beginner | {SITE_NAME}"
+    headline = (
+        "How to Start Learning Programming as a Beginner: "
+        "Basics, Python Practice & Next Steps"
+    )
+    description = (
+        "Learn programming as a beginner with practical steps, Python examples, "
+        "coding practice questions, and a simple daily learning routine."
+    )
+    return PageMetadata(
+        title=seo_title,
+        description=description,
+        canonical_url=article_url,
+        robots="index, follow",
+        og_type="article",
+        include_social=True,
+        structured_data=(
+            {
+                "@context": "https://schema.org",
+                "@type": "Article",
+                "headline": headline,
+                "description": description,
+                "mainEntityOfPage": {
+                    "@type": "WebPage",
+                    "@id": article_url,
+                },
+                "author": {
+                    "@type": "Organization",
+                    "name": SITE_NAME,
+                    "url": SITE_URL,
+                },
+                "publisher": {
+                    "@type": "Organization",
+                    "name": SITE_NAME,
+                    "url": SITE_URL,
+                },
+                "datePublished": "2026-11-26",
+                "dateModified": "2026-11-26",
+                "inLanguage": "en-IN",
+            },
+            {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Home",
+                        "item": _canonical("/"),
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "Blog",
+                        "item": _canonical("/blog"),
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 3,
+                        "name": "How to Start Learning Programming as a Beginner",
+                        "item": article_url,
+                    },
+                ],
             },
         ),
     )
@@ -198,6 +337,15 @@ def resolve_page_metadata(route_path: str, db: Session) -> PageMetadata:
 
     if normalized == "/":
         return _home_metadata()
+
+    if normalized == "/about":
+        return _about_metadata()
+
+    if normalized == "/blog":
+        return _blog_index_metadata()
+
+    if normalized == "/blog/how-to-start-learning-programming-as-a-beginner":
+        return _blog_article_metadata()
 
     if normalized == "/challenges":
         return _challenges_list_metadata()

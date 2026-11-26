@@ -1,13 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
+import { MemoryRouter } from "react-router-dom";
 import { HomePage } from "../src/pages/HomePage";
 import * as api from "../src/lib/api";
 
 function renderHomePage() {
   return render(
     <HelmetProvider>
-      <HomePage />
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
     </HelmetProvider>
   );
 }
