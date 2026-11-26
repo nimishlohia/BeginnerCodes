@@ -1,10 +1,13 @@
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
 from app.core.config import settings
+from app.core.seo import inject_seo_head, render_seo_head, resolve_page_metadata
 from app.api import api_router
+from app.db.session import get_db
 
 
 def _resolve_frontend_dist() -> Path:
@@ -15,11 +18,13 @@ def _resolve_frontend_dist() -> Path:
 
 
 def _mount_frontend_spa(application: FastAPI) -> None:
-    """Serve built Vite assets and SPA routes from FastAPI when frontend/dist exists."""
+    """Serve built Vite assets and SPA routes with route-specific initial HTML SEO."""
     frontend_dist = _resolve_frontend_dist()
     index_file = frontend_dist / "index.html"
     if not index_file.is_file():
         return
+
+    index_template = index_file.read_text(encoding="utf-8")
 
     assets_dir = frontend_dist / "assets"
     if assets_dir.is_dir():
@@ -32,7 +37,7 @@ def _mount_frontend_spa(application: FastAPI) -> None:
     api_prefix = settings.API_V1_PREFIX.strip("/")
 
     @application.get("/{full_path:path}", include_in_schema=False)
-    async def serve_spa(full_path: str):
+    async def serve_spa(full_path: str, db: Session = Depends(get_db)):
         if api_prefix and (
             full_path == api_prefix or full_path.startswith(f"{api_prefix}/")
         ):
@@ -43,7 +48,9 @@ def _mount_frontend_spa(application: FastAPI) -> None:
             if candidate.is_relative_to(frontend_dist) and candidate.is_file():
                 return FileResponse(candidate)
 
-        return FileResponse(index_file)
+        metadata = resolve_page_metadata(full_path, db)
+        rendered_html = inject_seo_head(index_template, render_seo_head(metadata))
+        return HTMLResponse(content=rendered_html)
 
 
 def create_application() -> FastAPI:

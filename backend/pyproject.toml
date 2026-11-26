@@ -27,3 +27,7 @@ minversion = "8.0"
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
+
+[tool.pyrefly]
+search-path = ["."]
+site-package-path = [".venv/Lib/site-packages"]
