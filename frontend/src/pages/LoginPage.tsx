@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import { trackAuthSuccess } from "../lib/analytics";
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -22,6 +23,7 @@ export const LoginPage: React.FC = () => {
     try {
       const response = await loginUser({ identifier, password });
       await login(response.access_token, response.user);
+      trackAuthSuccess("login");
       navigate(from, { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "An unexpected error occurred.");

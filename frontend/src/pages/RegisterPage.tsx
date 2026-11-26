@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser, loginUser, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import { trackAuthSuccess } from "../lib/analytics";
 
 export const RegisterPage: React.FC = () => {
   const { login } = useAuth();
@@ -24,6 +25,7 @@ export const RegisterPage: React.FC = () => {
       // Automatically log in after registration
       const tokenResponse = await loginUser({ identifier: username, password });
       await login(tokenResponse.access_token, tokenResponse.user);
+      trackAuthSuccess("sign_up");
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "An unexpected error occurred.");

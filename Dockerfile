@@ -7,6 +7,8 @@ RUN npm ci
 
 COPY frontend/ ./
 # Production build defaults to same-origin relative /api/... requests
+ARG VITE_GA_MEASUREMENT_ID=G-V187F2K2C2
+ENV VITE_GA_MEASUREMENT_ID=${VITE_GA_MEASUREMENT_ID}
 RUN npm run build
 
 # Stage 2: FastAPI backend serving API + built frontend

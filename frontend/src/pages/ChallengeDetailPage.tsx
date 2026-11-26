@@ -10,6 +10,7 @@ import {
   SubmissionDetail,
   ApiError,
 } from "../lib/api";
+import { trackChallengeSubmit, trackChallengeView } from "../lib/analytics";
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   Easy: "text-emerald-400 bg-emerald-950/60 border-emerald-800",
@@ -52,14 +53,21 @@ export const ChallengeDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
+    let active = true;
     getChallenge(Number(id))
       .then((c) => {
+        if (!active) return;
         setChallenge(c);
         if (c.supported_languages.length > 0) setLanguage(c.supported_languages[0]);
+        trackChallengeView(c);
       })
       .catch((err) => {
+        if (!active) return;
         setLoadError(err instanceof ApiError ? err.message : "Failed to load challenge.");
       });
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,6 +81,12 @@ export const ChallengeDetailPage: React.FC = () => {
       // Fetch full detail so we have result_summary
       const detail = await getSubmission(status.id, token);
       setLatestSubmission(detail);
+      trackChallengeSubmit({
+        challengeId: challenge.id,
+        slug: challenge.slug,
+        language,
+        status: detail.status,
+      });
     } catch (err) {
       setSubmitError(err instanceof ApiError ? err.message : "Submission failed.");
     } finally {

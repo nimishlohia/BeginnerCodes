@@ -1,7 +1,8 @@
 import SEO, { SITE_URL } from "../components/SEO";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { listChallenges, PaginatedChallengeList, ApiError } from "../lib/api";
+import { trackChallengeFilter, trackChallengeSearch } from "../lib/analytics";
 
 const CHALLENGES_BREADCRUMB = {
   "@context": "https://schema.org",
@@ -56,13 +57,38 @@ export const ChallengesPage: React.FC = () => {
     }
   }, [search, difficulty, page]);
 
+  const searchTimerRef = useRef<number | null>(null);
+
   useEffect(() => {
     fetchChallenges();
   }, [fetchChallenges]);
 
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current !== null) {
+        window.clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, []);
+
   // Reset to page 1 when filters change
-  const handleSearch = (v: string) => { setSearch(v); setPage(1); };
-  const handleDifficulty = (v: string) => { setDifficulty(v); setPage(1); };
+  const handleSearch = (v: string) => {
+    setSearch(v);
+    setPage(1);
+    if (searchTimerRef.current !== null) {
+      window.clearTimeout(searchTimerRef.current);
+    }
+    if (v.trim()) {
+      searchTimerRef.current = window.setTimeout(() => {
+        trackChallengeSearch(v);
+      }, 600);
+    }
+  };
+  const handleDifficulty = (v: string) => {
+    setDifficulty(v);
+    setPage(1);
+    trackChallengeFilter(v);
+  };
 
   return (
     <>

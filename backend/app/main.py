@@ -11,11 +11,11 @@ from app.db.session import get_db
 
 _CSP_REPORT_ONLY = (
     "default-src 'self'; "
-    "script-src 'self'; "
+    "script-src 'self' https://www.googletagmanager.com; "
     "style-src 'self' 'unsafe-inline'; "
-    "img-src 'self' data:; "
+    "img-src 'self' data: https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com; "
     "font-src 'self'; "
-    "connect-src 'self'; "
+    "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; "
     "object-src 'none'; "
     "frame-ancestors 'none'; "
     "base-uri 'self'; "
