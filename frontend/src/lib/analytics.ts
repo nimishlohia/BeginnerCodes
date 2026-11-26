@@ -1,7 +1,53 @@
 export const DEFAULT_GA_MEASUREMENT_ID = "G-V187F2K2C2";
 
+type TitleUpdateDetail = {
+  path: string;
+  title: string;
+};
+
+type TitleUpdateListener = (detail: TitleUpdateDetail) => void;
+
+const titleListeners = new Set<TitleUpdateListener>();
+let latestReadyTitle: TitleUpdateDetail | null = null;
 let initializedId: string | null = null;
 let lastTrackedPage: string | null = null;
+
+export function normalizeAnalyticsPath(path: string): string {
+  const trimmed = path.trim() || "/";
+  if (trimmed.length > 1 && trimmed.endsWith("/")) {
+    return trimmed.slice(0, -1);
+  }
+  return trimmed;
+}
+
+export function notifyTitleUpdated(path: string, title: string): void {
+  const detail: TitleUpdateDetail = {
+    path: normalizeAnalyticsPath(path),
+    title,
+  };
+  latestReadyTitle = detail;
+  for (const listener of titleListeners) {
+    listener(detail);
+  }
+}
+
+export function getLatestReadyTitleForPath(path: string): string | null {
+  if (!latestReadyTitle) {
+    return null;
+  }
+  return latestReadyTitle.path === normalizeAnalyticsPath(path)
+    ? latestReadyTitle.title
+    : null;
+}
+
+export function subscribeToTitleUpdates(
+  listener: TitleUpdateListener
+): () => void {
+  titleListeners.add(listener);
+  return () => {
+    titleListeners.delete(listener);
+  };
+}
 
 export function getGaMeasurementId(): string {
   const configured = import.meta.env.VITE_GA_MEASUREMENT_ID;
@@ -145,4 +191,6 @@ export function trackAuthSuccess(action: "login" | "sign_up"): void {
 export function resetAnalyticsForTests(): void {
   initializedId = null;
   lastTrackedPage = null;
+  latestReadyTitle = null;
+  titleListeners.clear();
 }

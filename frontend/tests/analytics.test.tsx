@@ -1,7 +1,10 @@
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, waitFor, act } from "@testing-library/react";
-import { MemoryRouter, useNavigate } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
+import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { AnalyticsTracker } from "../src/components/AnalyticsTracker";
+import SEO from "../src/components/SEO";
 import {
   DEFAULT_GA_MEASUREMENT_ID,
   initGA,
@@ -16,7 +19,9 @@ import {
 
 function RouteDriver({ onReady }: { onReady: (go: (to: string) => void) => void }) {
   const navigate = useNavigate();
-  onReady((to: string) => navigate(to));
+  useEffect(() => {
+    onReady((to: string) => navigate(to));
+  }, [navigate, onReady]);
   return null;
 }
 
@@ -24,6 +29,7 @@ describe("GA4 Analytics Integration", () => {
   beforeEach(() => {
     resetAnalyticsForTests();
     document.head.innerHTML = "";
+    document.title = "";
     delete (window as { gtag?: unknown }).gtag;
     window.dataLayer = [];
   });
@@ -64,7 +70,7 @@ describe("GA4 Analytics Integration", () => {
     let goTo: (to: string) => void = () => {};
     render(
       <MemoryRouter initialEntries={["/"]}>
-        <AnalyticsTracker />
+        <AnalyticsTracker titleFallbackMs={20} />
         <RouteDriver onReady={(fn) => { goTo = fn; }} />
       </MemoryRouter>
     );
@@ -98,6 +104,257 @@ describe("GA4 Analytics Integration", () => {
       (c) => c[1] === "page_view" && c[2]?.page_path === "/challenges"
     );
     expect(challengePageViews).toHaveLength(1);
+  });
+
+  it("waits for React Helmet updates across sync, lazy, and async SPA routes before sending page_view", async () => {
+    const gtagSpy = vi.fn();
+    window.gtag = gtagSpy;
+
+    const LazyAboutPage = lazy(
+      () =>
+        new Promise<{ default: React.ComponentType }>((resolve) => {
+          setTimeout(() => {
+            resolve({
+              default: function AboutMock() {
+                return (
+                  <>
+                    <SEO title="About Us" description="About LevelUp" path="/about" />
+                    <h1>About</h1>
+                  </>
+                );
+              },
+            });
+          }, 40);
+        })
+    );
+
+    function AsyncChallengeMock() {
+      const [loadedTitle, setLoadedTitle] = useState<string | null>(null);
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          setLoadedTitle("Two Sum - arrays Coding Challenge");
+        }, 40);
+        return () => clearTimeout(timer);
+      }, []);
+
+      if (!loadedTitle) {
+        return <div>Loading challenge…</div>;
+      }
+
+      return (
+        <>
+          <SEO
+            title={loadedTitle}
+            description="Solve Two Sum"
+            path="/challenges/1"
+          />
+          <h1>Two Sum</h1>
+        </>
+      );
+    }
+
+    let goTo: (to: string) => void = () => {};
+    render(
+      <HelmetProvider>
+        <MemoryRouter initialEntries={["/"]}>
+          <AnalyticsTracker />
+          <RouteDriver onReady={(fn) => { goTo = fn; }} />
+          <Suspense fallback={<div>Loading route…</div>}>
+            <Routes>
+              <Route
+                path="/"
+                element={<SEO title="Home" description="Home page" path="/" />}
+              />
+              <Route
+                path="/challenges"
+                element={
+                  <SEO
+                    title="Coding Challenges for Beginners"
+                    description="Challenges list"
+                    path="/challenges"
+                  />
+                }
+              />
+              <Route path="/challenges/1" element={<AsyncChallengeMock />} />
+              <Route path="/about" element={<LazyAboutPage />} />
+            </Routes>
+          </Suspense>
+        </MemoryRouter>
+      </HelmetProvider>
+    );
+
+    await waitFor(() => {
+      expect(gtagSpy).toHaveBeenCalledWith(
+        "event",
+        "page_view",
+        expect.objectContaining({
+          page_path: "/",
+          page_title: "Home | LevelUp",
+        })
+      );
+    });
+
+    // Synchronous route transition: / -> /challenges
+    act(() => {
+      goTo("/challenges");
+    });
+
+    await waitFor(() => {
+      expect(gtagSpy).toHaveBeenCalledWith(
+        "event",
+        "page_view",
+        expect.objectContaining({
+          page_path: "/challenges",
+          page_title: "Coding Challenges for Beginners | LevelUp",
+        })
+      );
+    });
+
+    // Same-pathname query string navigation keeps updated route title
+    act(() => {
+      goTo("/challenges?difficulty=Easy");
+    });
+
+    await waitFor(() => {
+      expect(gtagSpy).toHaveBeenCalledWith(
+        "event",
+        "page_view",
+        expect.objectContaining({
+          page_path: "/challenges?difficulty=Easy",
+          page_title: "Coding Challenges for Beginners | LevelUp",
+        })
+      );
+    });
+
+    // Async data-fetching route: /challenges?difficulty=Easy -> /challenges/1
+    act(() => {
+      goTo("/challenges/1");
+    });
+
+    await waitFor(() => {
+      expect(gtagSpy).toHaveBeenCalledWith(
+        "event",
+        "page_view",
+        expect.objectContaining({
+          page_path: "/challenges/1",
+          page_title: "Two Sum - arrays Coding Challenge | LevelUp",
+        })
+      );
+    });
+
+    // Lazy-loaded route: /challenges/1 -> /about
+    act(() => {
+      goTo("/about");
+    });
+
+    await waitFor(() => {
+      expect(gtagSpy).toHaveBeenCalledWith(
+        "event",
+        "page_view",
+        expect.objectContaining({
+          page_path: "/about",
+          page_title: "About Us | LevelUp",
+        })
+      );
+    });
+
+    const pageViewCalls = gtagSpy.mock.calls.filter((c) => c[1] === "page_view");
+    expect(pageViewCalls).toHaveLength(5);
+    expect(pageViewCalls.map((c) => [c[2].page_path, c[2].page_title])).toEqual([
+      ["/", "Home | LevelUp"],
+      ["/challenges", "Coding Challenges for Beginners | LevelUp"],
+      ["/challenges?difficulty=Easy", "Coding Challenges for Beginners | LevelUp"],
+      ["/challenges/1", "Two Sum - arrays Coding Challenge | LevelUp"],
+      ["/about", "About Us | LevelUp"],
+    ]);
+  });
+
+  it("preserves single page_view with updated title under React StrictMode and cancels abandoned routes", async () => {
+    const gtagSpy = vi.fn();
+    window.gtag = gtagSpy;
+
+    const SlowLazyRoute = lazy(
+      () =>
+        new Promise<{ default: React.ComponentType }>((resolve) => {
+          setTimeout(() => {
+            resolve({
+              default: () => (
+                <SEO title="Slow Page" description="Slow route" path="/slow" />
+              ),
+            });
+          }, 80);
+        })
+    );
+
+    let goTo: (to: string) => void = () => {};
+    render(
+      <React.StrictMode>
+        <HelmetProvider>
+          <MemoryRouter initialEntries={["/"]}>
+            <AnalyticsTracker />
+            <RouteDriver onReady={(fn) => { goTo = fn; }} />
+            <Suspense fallback={<div>Loading…</div>}>
+              <Routes>
+                <Route
+                  path="/"
+                  element={<SEO title="Home" description="Home page" path="/" />}
+                />
+                <Route path="/slow" element={<SlowLazyRoute />} />
+                <Route
+                  path="/blog"
+                  element={
+                    <SEO
+                      title="Blog - Beginner Programming Guides"
+                      description="Blog page"
+                      path="/blog"
+                    />
+                  }
+                />
+              </Routes>
+            </Suspense>
+          </MemoryRouter>
+        </HelmetProvider>
+      </React.StrictMode>
+    );
+
+    await waitFor(() => {
+      expect(gtagSpy).toHaveBeenCalledWith(
+        "event",
+        "page_view",
+        expect.objectContaining({
+          page_path: "/",
+          page_title: "Home | LevelUp",
+        })
+      );
+    });
+
+    // Navigate to /slow, then immediately abandon it for /blog before /slow resolves
+    act(() => {
+      goTo("/slow");
+    });
+    act(() => {
+      goTo("/blog");
+    });
+
+    await waitFor(() => {
+      expect(gtagSpy).toHaveBeenCalledWith(
+        "event",
+        "page_view",
+        expect.objectContaining({
+          page_path: "/blog",
+          page_title: "Blog - Beginner Programming Guides | LevelUp",
+        })
+      );
+    });
+
+    // Give the slow route promise time to settle so we confirm it does not fire late
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 120));
+    });
+
+    const pageViewCalls = gtagSpy.mock.calls.filter((c) => c[1] === "page_view");
+    expect(pageViewCalls).toHaveLength(2);
+    expect(pageViewCalls.map((c) => c[2].page_path)).toEqual(["/", "/blog"]);
   });
 
   it("emits non-PII custom events for challenges and auth flows", () => {

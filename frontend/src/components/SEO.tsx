@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { notifyTitleUpdated } from "../lib/analytics";
 
 export interface SEOProps {
   title: string;
@@ -29,7 +30,14 @@ export default function SEO({
     : [];
 
   return (
-    <Helmet>
+    <Helmet
+      defer={false}
+      onChangeClientState={(newState) => {
+        if (typeof newState.title === "string" && newState.title) {
+          notifyTitleUpdated(path, newState.title);
+        }
+      }}
+    >
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
