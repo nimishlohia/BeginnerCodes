@@ -62,6 +62,34 @@ describe("GA4 Analytics Integration", () => {
     ]);
   });
 
+  it("reuses the static GTM-KTGZV5ZW head tag without injecting a second Google tag or duplicate js init", () => {
+    const gtmScript = document.createElement("script");
+    gtmScript.async = true;
+    gtmScript.src = "https://www.googletagmanager.com/gtm.js?id=GTM-KTGZV5ZW";
+    document.head.appendChild(gtmScript);
+
+    window.gtag = function gtag() {
+      // eslint-disable-next-line prefer-rest-params
+      window.dataLayer.push(arguments);
+    };
+    window.gtag("js", new Date());
+
+    expect(initGA()).toBe(true);
+
+    const allGoogleScripts = document.querySelectorAll('script[src*="googletagmanager.com/"]');
+    expect(allGoogleScripts).toHaveLength(1);
+    expect(allGoogleScripts[0]).toHaveAttribute(
+      "src",
+      "https://www.googletagmanager.com/gtm.js?id=GTM-KTGZV5ZW"
+    );
+
+    const calls = window.dataLayer.map((entry) => Array.from(entry as ArrayLike<unknown>));
+    expect(calls.filter((c) => c[0] === "js")).toHaveLength(1);
+    expect(calls.filter((c) => c[0] === "config")).toEqual([
+      ["config", DEFAULT_GA_MEASUREMENT_ID, { send_page_view: false }],
+    ]);
+  });
+
   it("tracks SPA route changes via AnalyticsTracker without duplicating the same route", async () => {
     initGA();
     const gtagSpy = vi.fn();

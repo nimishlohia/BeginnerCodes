@@ -11,7 +11,7 @@ from app.db.session import get_db
 
 _CSP_REPORT_ONLY = (
     "default-src 'self'; "
-    "script-src 'self' https://www.googletagmanager.com; "
+    "script-src 'self' https://www.googletagmanager.com 'sha256-WFRMLsMGdvJeEZAYZrUympeBpc2cT0AELK1vPulFTTM='; "
     "style-src 'self' 'unsafe-inline'; "
     "img-src 'self' data: https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com; "
     "font-src 'self'; "

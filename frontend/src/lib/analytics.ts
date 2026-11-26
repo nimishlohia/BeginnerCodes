@@ -81,7 +81,7 @@ export function initGA(explicitId?: string): boolean {
   }
 
   const existingScript = document.querySelector(
-    `script[src*="googletagmanager.com/gtag/js"]`
+    `script[src*="googletagmanager.com/gtag/js"], script[src*="googletagmanager.com/gtm.js"]`
   );
   if (!existingScript) {
     const script = document.createElement("script");
@@ -93,7 +93,13 @@ export function initGA(explicitId?: string): boolean {
     document.head.appendChild(script);
   }
 
-  window.gtag("js", new Date());
+  const hasJsInit = window.dataLayer.some((entry) => {
+    const item = entry as ArrayLike<unknown>;
+    return item && item[0] === "js";
+  });
+  if (!hasJsInit) {
+    window.gtag("js", new Date());
+  }
   window.gtag("config", measurementId, {
     send_page_view: false,
   });
