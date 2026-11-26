@@ -1,3 +1,4 @@
+import SEO from "../components/SEO";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -316,7 +317,14 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full space-y-6 py-4">
+    <>
+      <SEO
+        title="Dashboard"
+        description="Manage your LevelUp profile, programming skills and learning preferences."
+        path="/dashboard"
+        noIndex
+      />
+      <div className="max-w-2xl mx-auto w-full space-y-6 py-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -350,5 +358,6 @@ export const DashboardPage: React.FC = () => {
       <SkillsSection />
       <PreferencesSection />
     </div>
+    </>
   );
 };

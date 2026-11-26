@@ -1,3 +1,4 @@
+import SEO from "../components/SEO";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser, loginUser, ApiError } from "../lib/api";
@@ -32,7 +33,14 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+    <>
+      <SEO
+        title="Create Account"
+        description="Create a LevelUp account to practise coding challenges alongside peers at your skill level."
+        path="/register"
+        noIndex
+      />
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
       <div className="w-full max-w-sm p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl backdrop-blur space-y-6">
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-bold text-white">Create your account</h1>
@@ -114,5 +122,6 @@ export const RegisterPage: React.FC = () => {
         </p>
       </div>
     </div>
+    </>
   );
 };

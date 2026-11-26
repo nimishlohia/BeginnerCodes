@@ -1,3 +1,4 @@
+import SEO from "../components/SEO";
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser, ApiError } from "../lib/api";
@@ -30,7 +31,14 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+    <>
+      <SEO
+        title="Sign In"
+        description="Sign in to your LevelUp account to solve coding challenges and track your learning progress."
+        path="/login"
+        noIndex
+      />
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
       <div className="w-full max-w-sm p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl backdrop-blur space-y-6">
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>
@@ -93,5 +101,6 @@ export const LoginPage: React.FC = () => {
         </p>
       </div>
     </div>
+    </>
   );
 };

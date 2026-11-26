@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import App from "../src/App";
 import * as api from "../src/lib/api";
 
@@ -12,7 +13,11 @@ describe("App Integration & Routing", () => {
       environment: "development",
     });
 
-    render(<App />);
+    render(
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
+    );
 
     // Layout header — brand name
     expect(screen.getAllByRole("heading", { name: "LevelUp" })[0]).toBeInTheDocument();

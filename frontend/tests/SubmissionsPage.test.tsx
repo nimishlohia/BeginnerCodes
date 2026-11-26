@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
 import { SubmissionsPage } from "../src/pages/SubmissionsPage";
 import { AuthContext } from "../src/context/AuthContext";
@@ -34,20 +35,22 @@ const mockUser = {
 
 function renderPage() {
   return render(
-    <AuthContext.Provider
-      value={{
-        token: "mock-token",
-        user: mockUser,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        refreshUser: vi.fn(),
-      }}
-    >
-      <MemoryRouter initialEntries={["/submissions"]}>
-        <SubmissionsPage />
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <HelmetProvider>
+      <AuthContext.Provider
+        value={{
+          token: "mock-token",
+          user: mockUser,
+          isAuthenticated: true,
+          login: vi.fn(),
+          logout: vi.fn(),
+          refreshUser: vi.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={["/submissions"]}>
+          <SubmissionsPage />
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </HelmetProvider>
   );
 }
 

@@ -1,3 +1,4 @@
+import SEO from "../components/SEO";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -50,7 +51,14 @@ export const SubmissionsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto w-full space-y-6">
+    <>
+      <SEO
+        title="My Submissions"
+        description="View your personal coding challenge submission history and evaluation summaries on LevelUp."
+        path="/submissions"
+        noIndex
+      />
+      <div className="max-w-3xl mx-auto w-full space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">My Submissions</h1>
         <p className="text-sm text-slate-400 mt-0.5">Your personal submission history.</p>
@@ -156,5 +164,6 @@ export const SubmissionsPage: React.FC = () => {
         </>
       )}
     </div>
+    </>
   );
 };

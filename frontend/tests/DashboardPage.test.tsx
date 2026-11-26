@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
 import { DashboardPage } from "../src/pages/DashboardPage";
 import * as api from "../src/lib/api";
@@ -48,20 +49,22 @@ const mockRefreshUser = vi.fn();
 
 function renderDashboard(user: UserDetail | null = mockUser) {
   return render(
-    <AuthContext.Provider
-      value={{
-        token: "mock-token",
-        user,
-        isAuthenticated: !!user,
-        login: vi.fn(),
-        logout: mockLogout,
-        refreshUser: mockRefreshUser,
-      }}
-    >
-      <MemoryRouter initialEntries={["/dashboard"]}>
-        <DashboardPage />
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <HelmetProvider>
+      <AuthContext.Provider
+        value={{
+          token: "mock-token",
+          user,
+          isAuthenticated: !!user,
+          login: vi.fn(),
+          logout: mockLogout,
+          refreshUser: mockRefreshUser,
+        }}
+      >
+        <MemoryRouter initialEntries={["/dashboard"]}>
+          <DashboardPage />
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </HelmetProvider>
   );
 }
 

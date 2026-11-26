@@ -1,3 +1,4 @@
+import SEO, { SITE_URL } from "../components/SEO";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -81,9 +82,17 @@ export const ChallengeDetailPage: React.FC = () => {
 
   if (loadError) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-16">
-        <p className="text-rose-400 text-sm">{loadError}</p>
-      </div>
+      <>
+        <SEO
+          title="Challenge Not Found"
+          description="The requested coding challenge could not be found on LevelUp."
+          path={id ? `/challenges/${id}` : "/challenges"}
+          noIndex
+        />
+        <div className="max-w-2xl mx-auto text-center py-16">
+          <p className="text-rose-400 text-sm">{loadError}</p>
+        </div>
+      </>
     );
   }
 
@@ -91,171 +100,207 @@ export const ChallengeDetailPage: React.FC = () => {
     return <div className="text-center py-16 text-slate-400 text-sm">Loading…</div>;
   }
 
+  const cleanDescription = challenge.description.replace(/\s+/g, " ").trim().slice(0, 145);
+  const challengeBreadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: `${SITE_URL}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Challenges",
+        item: `${SITE_URL}/challenges`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: challenge.title,
+        item: `${SITE_URL}/challenges/${challenge.id}`,
+      },
+    ],
+  };
+
   return (
-    <div className="max-w-3xl mx-auto w-full space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold text-white">{challenge.title}</h1>
-          <span
-            className={`text-xs font-medium px-2 py-0.5 rounded-full border ${DIFFICULTY_COLORS[challenge.difficulty] ?? "text-slate-400 bg-slate-800 border-slate-700"}`}
-          >
-            {challenge.difficulty}
-          </span>
-          <span className="text-xs text-slate-500 bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full">
-            {challenge.topic}
-          </span>
-        </div>
-      </div>
+    <>
+      <SEO
+        title={`${challenge.title} - ${challenge.topic} Coding Challenge`}
+        description={`${cleanDescription}. Practise this ${challenge.difficulty.toLowerCase()} ${challenge.topic} coding challenge on LevelUp and improve your programming skills.`}
+        path={`/challenges/${challenge.id}`}
+        type="article"
+        structuredData={challengeBreadcrumb}
+      />
 
-      {/* Description */}
-      <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Problem</h2>
-        <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{challenge.description}</p>
-      </section>
-
-      {/* Input / Output / Constraints */}
-      {(challenge.input_format || challenge.output_format || challenge.constraints) && (
-        <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
-          {challenge.input_format && (
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Input Format</h3>
-              <p className="text-sm text-slate-300 whitespace-pre-wrap">{challenge.input_format}</p>
-            </div>
-          )}
-          {challenge.output_format && (
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Output Format</h3>
-              <p className="text-sm text-slate-300 whitespace-pre-wrap">{challenge.output_format}</p>
-            </div>
-          )}
-          {challenge.constraints && (
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Constraints</h3>
-              <p className="text-sm text-slate-300 whitespace-pre-wrap font-mono text-xs">{challenge.constraints}</p>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Examples */}
-      {challenge.examples.length > 0 && (
-        <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Examples</h2>
-          {challenge.examples.map((ex, i) => (
-            <div key={ex.id} className="space-y-2">
-              <p className="text-xs text-slate-500 font-medium">Example {i + 1}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <p className="text-xs text-slate-500 mb-1">Input</p>
-                  <CodeBlock code={ex.input_data} />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 mb-1">Output</p>
-                  <CodeBlock code={ex.expected_output} />
-                </div>
-              </div>
-              {ex.explanation && (
-                <p className="text-xs text-slate-400 italic">{ex.explanation}</p>
-              )}
-            </div>
-          ))}
-        </section>
-      )}
-
-      {/* Code Editor */}
-      <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Your Solution</h2>
-
-        {!isAuthenticated && (
-          <p className="text-sm text-slate-400">
-            <button
-              onClick={() => navigate("/login")}
-              className="text-emerald-400 hover:text-emerald-300 font-medium transition"
+      <div className="max-w-3xl mx-auto w-full space-y-6">
+        {/* Header */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold text-white">{challenge.title}</h1>
+            <span
+              className={`text-xs font-medium px-2 py-0.5 rounded-full border ${DIFFICULTY_COLORS[challenge.difficulty] ?? "text-slate-400 bg-slate-800 border-slate-700"}`}
             >
-              Sign in
-            </button>{" "}
-            to submit a solution.
-          </p>
-        )}
-
-        {isAuthenticated && (
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {/* Language selector */}
-            <div>
-              <label htmlFor="language" className="block text-xs font-medium text-slate-300 mb-1">
-                Language
-              </label>
-              <select
-                id="language"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-              >
-                {challenge.supported_languages.map((l) => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Code textarea */}
-            <div>
-              <label htmlFor="sourceCode" className="block text-xs font-medium text-slate-300 mb-1">
-                Source Code
-              </label>
-              <textarea
-                id="sourceCode"
-                rows={12}
-                required
-                value={sourceCode}
-                onChange={(e) => setSourceCode(e.target.value)}
-                spellCheck={false}
-                className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 transition resize-y"
-                placeholder={`# Write your ${language} solution here…`}
-              />
-            </div>
-
-            {submitError && (
-              <p role="alert" className="text-xs text-rose-400 bg-rose-950/40 border border-rose-800/50 rounded-lg px-3 py-2">
-                {submitError}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition disabled:opacity-50"
-            >
-              {submitting ? "Submitting…" : "Submit Solution"}
-            </button>
-          </form>
-        )}
-      </section>
-
-      {/* Submission Result */}
-      {latestSubmission && (
-        <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Submission Result
-          </h2>
-          <div className="flex items-center gap-3">
-            <span className={`text-lg font-bold ${STATUS_COLORS[latestSubmission.status] ?? "text-slate-300"}`}>
-              {latestSubmission.status.replace(/_/g, " ")}
+              {challenge.difficulty}
             </span>
-            {latestSubmission.execution_time_ms !== null && (
-              <span className="text-xs text-slate-500">{latestSubmission.execution_time_ms}ms</span>
-            )}
+            <span className="text-xs text-slate-500 bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full">
+              {challenge.topic}
+            </span>
           </div>
-          {latestSubmission.result_summary && (
-            <p className="text-xs text-slate-400 bg-slate-950/60 rounded-lg px-3 py-2 leading-relaxed border border-slate-800">
-              {latestSubmission.result_summary}
+        </div>
+
+        {/* Description */}
+        <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Problem</h2>
+          <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{challenge.description}</p>
+        </section>
+
+        {/* Input / Output / Constraints */}
+        {(challenge.input_format || challenge.output_format || challenge.constraints) && (
+          <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
+            {challenge.input_format && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Input Format</h3>
+                <p className="text-sm text-slate-300 whitespace-pre-wrap">{challenge.input_format}</p>
+              </div>
+            )}
+            {challenge.output_format && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Output Format</h3>
+                <p className="text-sm text-slate-300 whitespace-pre-wrap">{challenge.output_format}</p>
+              </div>
+            )}
+            {challenge.constraints && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Constraints</h3>
+                <p className="text-sm text-slate-300 whitespace-pre-wrap font-mono text-xs">{challenge.constraints}</p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Examples */}
+        {challenge.examples.length > 0 && (
+          <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Examples</h2>
+            {challenge.examples.map((ex, i) => (
+              <div key={ex.id} className="space-y-2">
+                <p className="text-xs text-slate-500 font-medium">Example {i + 1}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Input</p>
+                    <CodeBlock code={ex.input_data} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Output</p>
+                    <CodeBlock code={ex.expected_output} />
+                  </div>
+                </div>
+                {ex.explanation && (
+                  <p className="text-xs text-slate-400 italic">{ex.explanation}</p>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* Code Editor */}
+        <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Your Solution</h2>
+
+          {!isAuthenticated && (
+            <p className="text-sm text-slate-400">
+              <button
+                onClick={() => navigate("/login")}
+                className="text-emerald-400 hover:text-emerald-300 font-medium transition"
+              >
+                Sign in
+              </button>{" "}
+              to submit a solution.
             </p>
           )}
-          <p className="text-xs text-amber-600/80 border border-amber-900/40 bg-amber-950/20 rounded-lg px-3 py-2">
-            ⚠ Evaluation is currently simulated. No code was executed. Results do not reflect actual correctness.
-          </p>
+
+          {isAuthenticated && (
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Language selector */}
+              <div>
+                <label htmlFor="language" className="block text-xs font-medium text-slate-300 mb-1">
+                  Language
+                </label>
+                <select
+                  id="language"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                >
+                  {challenge.supported_languages.map((l) => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Code textarea */}
+              <div>
+                <label htmlFor="sourceCode" className="block text-xs font-medium text-slate-300 mb-1">
+                  Source Code
+                </label>
+                <textarea
+                  id="sourceCode"
+                  rows={12}
+                  required
+                  value={sourceCode}
+                  onChange={(e) => setSourceCode(e.target.value)}
+                  spellCheck={false}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 transition resize-y"
+                  placeholder={`# Write your ${language} solution here…`}
+                />
+              </div>
+
+              {submitError && (
+                <p role="alert" className="text-xs text-rose-400 bg-rose-950/40 border border-rose-800/50 rounded-lg px-3 py-2">
+                  {submitError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition disabled:opacity-50"
+              >
+                {submitting ? "Submitting…" : "Submit Solution"}
+              </button>
+            </form>
+          )}
         </section>
-      )}
-    </div>
+
+        {/* Submission Result */}
+        {latestSubmission && (
+          <section className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Submission Result
+            </h2>
+            <div className="flex items-center gap-3">
+              <span className={`text-lg font-bold ${STATUS_COLORS[latestSubmission.status] ?? "text-slate-300"}`}>
+                {latestSubmission.status.replace(/_/g, " ")}
+              </span>
+              {latestSubmission.execution_time_ms !== null && (
+                <span className="text-xs text-slate-500">{latestSubmission.execution_time_ms}ms</span>
+              )}
+            </div>
+            {latestSubmission.result_summary && (
+              <p className="text-xs text-slate-400 bg-slate-950/60 rounded-lg px-3 py-2 leading-relaxed border border-slate-800">
+                {latestSubmission.result_summary}
+              </p>
+            )}
+            <p className="text-xs text-amber-600/80 border border-amber-900/40 bg-amber-950/20 rounded-lg px-3 py-2">
+              ⚠ Evaluation is currently simulated. No code was executed. Results do not reflect actual correctness.
+            </p>
+          </section>
+        )}
+      </div>
+    </>
   );
 };

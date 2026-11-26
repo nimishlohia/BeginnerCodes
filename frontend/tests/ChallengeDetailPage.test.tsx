@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { ChallengeDetailPage } from "../src/pages/ChallengeDetailPage";
 import { AuthContext } from "../src/context/AuthContext";
@@ -41,22 +42,24 @@ const mockSubmission: api.SubmissionDetail = {
 
 function renderPage(authenticated = false) {
   return render(
-    <AuthContext.Provider
-      value={{
-        token: authenticated ? "mock-token" : null,
-        user: authenticated ? { id: 1, username: "alice", email: "a@a.com", created_at: "", updated_at: "", skills: [] } : null,
-        isAuthenticated: authenticated,
-        login: vi.fn(),
-        logout: vi.fn(),
-        refreshUser: vi.fn(),
-      }}
-    >
-      <MemoryRouter initialEntries={["/challenges/1"]}>
-        <Routes>
-          <Route path="/challenges/:id" element={<ChallengeDetailPage />} />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <HelmetProvider>
+      <AuthContext.Provider
+        value={{
+          token: authenticated ? "mock-token" : null,
+          user: authenticated ? { id: 1, username: "alice", email: "a@a.com", created_at: "", updated_at: "", skills: [] } : null,
+          isAuthenticated: authenticated,
+          login: vi.fn(),
+          logout: vi.fn(),
+          refreshUser: vi.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={["/challenges/1"]}>
+          <Routes>
+            <Route path="/challenges/:id" element={<ChallengeDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </HelmetProvider>
   );
 }
 

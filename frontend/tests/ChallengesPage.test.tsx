@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
 import { ChallengesPage } from "../src/pages/ChallengesPage";
 import * as api from "../src/lib/api";
@@ -17,9 +18,11 @@ const mockList: api.PaginatedChallengeList = {
 
 function renderPage() {
   return render(
-    <MemoryRouter initialEntries={["/challenges"]}>
-      <ChallengesPage />
-    </MemoryRouter>
+    <HelmetProvider>
+      <MemoryRouter initialEntries={["/challenges"]}>
+        <ChallengesPage />
+      </MemoryRouter>
+    </HelmetProvider>
   );
 }
 

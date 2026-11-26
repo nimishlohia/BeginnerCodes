@@ -1,7 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import { HomePage } from "../src/pages/HomePage";
 import * as api from "../src/lib/api";
+
+function renderHomePage() {
+  return render(
+    <HelmetProvider>
+      <HomePage />
+    </HelmetProvider>
+  );
+}
 
 describe("HomePage Component", () => {
   beforeEach(() => {
@@ -16,7 +25,7 @@ describe("HomePage Component", () => {
       environment: "development",
     });
 
-    render(<HomePage />);
+    renderHomePage();
 
     expect(screen.getByRole("heading", { level: 1, name: "LevelUp" })).toBeInTheDocument();
     expect(
@@ -36,7 +45,7 @@ describe("HomePage Component", () => {
       environment: "development",
     });
 
-    render(<HomePage />);
+    renderHomePage();
 
     // Initially or upon resolve
     await waitFor(() => {
@@ -50,7 +59,7 @@ describe("HomePage Component", () => {
       new api.ApiError("Connection refused", 0)
     );
 
-    render(<HomePage />);
+    renderHomePage();
 
     await waitFor(() => {
       expect(screen.getByText("Unavailable")).toBeInTheDocument();
@@ -69,7 +78,7 @@ describe("HomePage Component", () => {
         environment: "development",
       });
 
-    render(<HomePage />);
+    renderHomePage();
 
     await waitFor(() => {
       expect(screen.getByText("Unavailable")).toBeInTheDocument();

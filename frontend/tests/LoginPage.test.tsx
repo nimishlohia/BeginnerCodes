@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
 import { LoginPage } from "../src/pages/LoginPage";
 import * as api from "../src/lib/api";
@@ -8,11 +9,13 @@ import { AuthProvider } from "../src/context/AuthContext";
 // Wrap component with required providers
 function renderLoginPage(initialPath = "/login") {
   return render(
-    <AuthProvider>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <LoginPage />
-      </MemoryRouter>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <MemoryRouter initialEntries={[initialPath]}>
+          <LoginPage />
+        </MemoryRouter>
+      </AuthProvider>
+    </HelmetProvider>
   );
 }
 
